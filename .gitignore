@@ -1,0 +1,29 @@
+# Secrets and machine-local environment configuration
+.env
+.env.*
+!.env.example
+!**/.env.example
+
+# Assessment reference material
+references/
+
+# Next.js and Node.js artifacts
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/coverage/
+frontend/.vercel/
+frontend/*.tsbuildinfo
+frontend/next-env.d.ts
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# ASP.NET Core build and IDE artifacts
+backend/bin/
+backend/obj/
+backend/TestResults/
+backend/.vs/
+backend/appsettings.Development.json
+*.user
+*.suo
