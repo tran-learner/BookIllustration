@@ -15,3 +15,15 @@ When designing the database, the session representation needs to be considered b
 I initially proposed a separate table for step names and their display order. Each `PipelineStep` record could reference that table instead of storing the step name and order itself, and adding or removing steps in the future would only require changing the references.
 
 Codex pushed back on this approach. The five pipeline steps are fixed for this assessment, so the definition table would only contain static seed data while adding another relationship, migration, and query. Keeping the step type as an enum in `PipelineSteps`, with its name and display order mapped in code, is simpler for the current scope. I agreed with that opinion.
+
+## 05. Gemini 3.5 Flash Lite for Text and Gemini 3.1 Flash Image for Illustrations
+
+I chose `gemini-3.5-flash-lite` for text generation because it is sufficient for the structured prompt-generation tasks in this application while keeping costs low. I chose `gemini-3.1-flash-image` for illustrations because it offers a practical balance between image quality and cost.
+
+The trade-off is that these models are much less capable than premium models, while not being the cheapest available options. I accepted that trade-off to reduce costs while still retaining a reasonable level of output quality.
+
+## 06. Feature-Specific DTOs for Text and Image Interactions
+
+Codex initially suggested a shared DTO for the Gemini Interaction resource because both business features receive responses from the Gemini API through the same `Interaction` object. It then suggested a second layer of smaller result DTOs for the text and image use cases.
+
+I pushed back and chose two direct, feature-specific DTOs instead: `GeminiTextInteraction` for an interaction ID and text output, and `GeminiImageInteraction` for an interaction ID, image data, and MIME type. This is simpler and already sufficient for the current pipeline, without adding a two-layer abstraction for extensibility that the assessment does not need. The cost is that a future feature which needs the full generic Interaction resource may require a shared DTO later.

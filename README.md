@@ -14,3 +14,5 @@ A web app that turns a book's text into character portraits and a chapter illust
 ## Database Conceptual Model
 
 ![Database conceptual model](design/exported_files/cdm.png)
+
+Gemini REST API requests are based on the [Interactions API overview](https://ai.google.dev/gemini-api/docs/interactions-overview).
