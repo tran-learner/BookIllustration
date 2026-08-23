@@ -10,3 +10,7 @@ A web app that turns a book's text into character portraits and a chapter illust
 - `backend/`: Built with ASP.NET Core; handles application logic and the core Gemini integration for generating illustrations.
 - `AGENTS.md`: Defines the rules the agent must follow when collaborating with me.
 - `HARNESS.md`: Describes the code verification process to run after each code change.
+
+## Database Conceptual Model
+
+![Database conceptual model](design/exported_files/cdm.png)

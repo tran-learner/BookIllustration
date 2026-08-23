@@ -27,3 +27,9 @@ backend/.vs/
 backend/appsettings.Development.json
 *.user
 *.suo
+
+# Local application data
+backend/AppData/
+
+# Designs of the app
+design/raw/
