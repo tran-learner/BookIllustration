@@ -6,4 +6,6 @@ public class FileStorageOptions
 
     public string IllustrationsDirectory { get; set; } =
         "AppData/Illustrations";
+
+    public string BooksDirectory { get; set; } = "AppData/Books";
 }

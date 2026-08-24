@@ -10,58 +10,74 @@
    - Duplicate-request protection is evaluated by calling the endpoint again while the step is still in its valid processing period and confirming that the second request returns `409 Conflict`.
 
 ## Test Report
-### 1. Tests for pipeline steps 
 
-** Style step - 13:12 24/08/2026 (backend\BookIllustration_Backend.Tests\StyleTesting.cs)**
+### 1. Tests for pipeline steps
+
+---
+
+#### Style step - 13:12 24/08/2026
+
+Test file: `backend\BookIllustration_Backend.Tests\StyleTesting.cs`
 
 - Happy path with mocked Gemini responses. Expected: an authenticated project owner receives `204 No Content`; the Style step becomes `Completed`; the generated style is saved to the project; and a pending Characters step is created.
 - A duplicate request while the current Style step is still running. Expected: the second request receives `409 Conflict`, while the first request can continue and complete.
 
-Test result: 
+Test result:
 [xUnit.net 00:00:01.83]   Finished:    BookIllustration_Backend.Tests
   BookIllustration_Backend.Tests test succeeded (2.5s)
 
 Test summary: total: 2, failed: 0, succeeded: 2, skipped: 0, duration: 2.5s
 Build succeeded in 4.3s
 
-** Character step — 19:24 24/08/2026 (backend\BookIllustration_Backend.Tests\CharacterTesting.cs)**
+---
+
+#### Character step - 19:24 24/08/2026
+
+Test file: `backend\BookIllustration_Backend.Tests\CharacterTesting.cs`
 
 - Happy path with mocked Gemini responses. Expected: an authenticated project owner receives `204 No Content`; the Characters step becomes `Completed`; parsed character records are saved; and a pending Portraits step is created with its character interaction ID and parsed character prompts in `StepData`.
 - A duplicate request while the current Characters step is still running. Expected: the second request receives `409 Conflict`, while the first request can continue and complete.
 
-Test result: 
+Test result:
 BookIllustration_Backend.Tests test succeeded (2.8s)
 
 Test summary: total: 2, failed: 0, succeeded: 2, skipped: 0, duration: 2.8s
 Build succeeded in 4.7s
 
-** Portrait step - 21:00 24/08/2026 (backend\BookIllustration_Backend.Tests\PortraitTesting.cs)**
+---
+
+#### Portrait step - 21:00 24/08/2026
+
+Test file: `backend\BookIllustration_Backend.Tests\PortraitTesting.cs`
 
 - Happy path with mocked Gemini responses. Expected: an authenticated project owner receives `204 No Content`; the Portraits step becomes `Completed`; each pending character receives an illustration path; the matching image files are saved in the isolated illustrations directory; and a pending Chapters step is created with the character and image interaction IDs in `StepData`.
 
 Test result:
- BookIllustration_Backend.Tests test succeeded (2.8s)
+BookIllustration_Backend.Tests test succeeded (2.8s)
 
 Test summary: total: 2, failed: 0, succeeded: 2, skipped: 0, duration: 2.8s
 Build succeeded in 4.6s
 
-** Chapters step - 21:02 24/08/2026 (backend\BookIllustration_Backend.Tests\ChapterTesting.cs)**
+---
+
+#### Chapters step - 21:02 24/08/2026
+
+Test file: `backend\BookIllustration_Backend.Tests\ChapterTesting.cs`
 
 - Happy path with mocked Gemini responses. Expected: an authenticated project owner receives `204 No Content`; the Chapters step becomes `Completed`; the generated chapter prompt and chapter interaction ID are saved in `StepData`; the Chapter record is persisted; and a pending Illustrations step is created with the image interaction ID in `StepData`.
 
 Test result:
- BookIllustration_Backend.Tests test succeeded (2.3s)
+BookIllustration_Backend.Tests test succeeded (2.3s)
 
 Test summary: total: 2, failed: 0, succeeded: 2, skipped: 0, duration: 2.3s
 Build succeeded with 2 warning(s) in 5.1s
 
-** Illustration step - 22:03 24/08/2026 (backend\BookIllustration_Backend.Tests\IllustrationTesting.cs)**
+---
+
+#### Illustration step - 22:03 24/08/2026
+
+Test file: `backend\BookIllustration_Backend.Tests\IllustrationTesting.cs`
 
 - Happy path with mocked Gemini responses. Expected: an authenticated project owner receives `204 No Content`; the Illustrations step becomes `Completed`; each pending chapter receives an illustration path; and the matching image files are saved in the isolated illustrations directory.
 
-Test result: 
-  BookIllustration_Backend.Tests test succeeded (2.6s)
-
-Test summary: total: 2, failed: 0, succeeded: 2, skipped: 0, duration: 2.6s
-Build succeeded in 4.3s
-
+Test result: pending execution.

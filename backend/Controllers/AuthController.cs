@@ -1,5 +1,7 @@
+using System.Security.Claims;
 using BookIllustration_Backend.Models.DTOs.Authentication;
 using BookIllustration_Backend.Services.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BookIllustration_Backend.Controllers;
@@ -8,6 +10,17 @@ namespace BookIllustration_Backend.Controllers;
 [Route("api/auth")]
 public class AuthController(AuthService authService) : ControllerBase
 {
+    [Authorize]
+    [HttpGet("session")]
+    public ActionResult GetCurrentSession()
+    {
+        var fullName = User.FindFirst(ClaimTypes.Name)?.Value;
+
+        return string.IsNullOrWhiteSpace(fullName)
+            ? Unauthorized()
+            : Ok(new { fullName });
+    }
+
     [HttpPost("session")]
     public async Task<ActionResult> CreateSession(
         [FromBody] CreateSessionRequest request,
