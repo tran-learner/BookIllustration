@@ -179,6 +179,18 @@ public class FakeGeminiHandler : HttpMessageHandler
                     """);
             }
 
+            if (input?.StartsWith(
+                    "Starting from now, we're going to illustrate the book's chapters",
+                    StringComparison.Ordinal) == true)
+            {
+                return CreateJsonResponse("""
+                    {
+                      "id": "chapter-image-setup-interaction-id",
+                      "steps": []
+                    }
+                    """);
+            }
+
             return interactionRequestNumber switch
             {
                 1 => CreateJsonResponse("""

@@ -206,7 +206,8 @@ public class ChapterService(AppDbContext dbContext, GeminiClient geminiClient)
             StepData = JsonSerializer.Serialize(
                 new IllustrationStepData
                 {
-                    ImageInteractionId = stepData.ImageInteractionId
+                    ImageInteractionId = stepData.ImageInteractionId,
+                    ChapterPrompts = stepData.ChapterPrompts
                 },
                 StepDataJsonOptions),
             UpdatedAt = chapterStep.UpdatedAt.AddTicks(1),

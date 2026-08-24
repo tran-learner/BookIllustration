@@ -94,13 +94,19 @@ public class GeminiClient(HttpClient httpClient, GeminiOptions options)
 
     public async Task<GeminiImageInteractionContext> CreateImageInteractionContextAsync(
         string input,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        string? previousInteractionId = null)
     {
         var requestBody = new Dictionary<string, object?>
         {
             ["model"] = options.ImageModel,
             ["input"] = input
         };
+
+        if (!string.IsNullOrWhiteSpace(previousInteractionId))
+        {
+            requestBody["previous_interaction_id"] = previousInteractionId;
+        }
 
         using var response = await httpClient.PostAsJsonAsync(
             "interactions",

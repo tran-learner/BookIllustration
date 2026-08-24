@@ -16,7 +16,8 @@ public class PipelineController(
     StyleService styleService,
     CharacterService characterService,
     PortraitService portraitService,
-    ChapterService chapterService) : ControllerBase
+    ChapterService chapterService,
+    ChapterIllustrationService chapterIllustrationService) : ControllerBase
 {
     [HttpPost("style")]
     public async Task<IActionResult> RunStyle(
@@ -147,6 +148,42 @@ public class PipelineController(
         try
         {
             await chapterService.RunChapterStepAsync(projectId, cancellationToken);
+            return NoContent();
+        }
+        catch (InvalidOperationException exception)
+        {
+            return Conflict(new { message = exception.Message });
+        }
+    }
+
+    [HttpPost("illustrations")]
+    public async Task<IActionResult> RunIllustrations(
+        int projectId,
+        CancellationToken cancellationToken)
+    {
+        var userEmail = User.FindFirst(ClaimTypes.Email)?.Value;
+
+        if (string.IsNullOrWhiteSpace(userEmail))
+        {
+            return Unauthorized();
+        }
+
+        var ownsProject = await dbContext.Projects.AnyAsync(
+            project => project.ProjectId == projectId
+                && project.UserEmail == userEmail,
+            cancellationToken);
+
+        if (!ownsProject)
+        {
+            return NotFound();
+        }
+
+        try
+        {
+            await chapterIllustrationService.RunIllustrationsStepAsync(
+                projectId,
+                cancellationToken);
+
             return NoContent();
         }
         catch (InvalidOperationException exception)
