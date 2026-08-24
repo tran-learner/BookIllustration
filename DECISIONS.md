@@ -27,3 +27,9 @@ The trade-off is that these models are much less capable than premium models, wh
 Codex initially suggested a shared DTO for the Gemini Interaction resource because both business features receive responses from the Gemini API through the same `Interaction` object. It then suggested a second layer of smaller result DTOs for the text and image use cases.
 
 I pushed back and chose two direct, feature-specific DTOs instead: `GeminiTextInteraction` for an interaction ID and text output, and `GeminiImageInteraction` for an interaction ID, image data, and MIME type. This is simpler and already sufficient for the current pipeline, without adding a two-layer abstraction for extensibility that the assessment does not need. The cost is that a future feature which needs the full generic Interaction resource may require a shared DTO later.
+
+## 07. Upload the Book to Gemini When the Style Step Starts
+
+When dividing business logic between services, I proposed that `StyleService` should upload the book file to Gemini. Codex initially pushed back because it thought this would make the Style step responsible for creating the project and send the book text to Gemini again.
+
+I disagreed because `ProjectService` only receives the user's uploaded or pasted text, saves the local `.txt` file, and creates the project record. It does not call Gemini. When the user explicitly starts the Style step, `StyleService` uploads the already-saved file for the first time, receives the Gemini file URI, and stores that URI together with the initial book interaction ID in the step's `StepData`. Later steps reuse the stored interaction chain, so the book is not uploaded or sent again.

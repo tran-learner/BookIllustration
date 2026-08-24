@@ -24,6 +24,7 @@ public class PipelineStep
 
     public string? ErrorMessage { get; set; }
 
+    [ConcurrencyCheck]
     public Guid? RunId { get; set; }
 
     public int ProjectId { get; set; }

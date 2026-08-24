@@ -7,6 +7,9 @@
 # Assessment reference material
 references/
 
+# Personal working notes
+worklog.md
+
 # Next.js and Node.js artifacts
 frontend/node_modules/
 frontend/.next/
