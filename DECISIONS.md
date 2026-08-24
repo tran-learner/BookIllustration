@@ -33,3 +33,7 @@ I pushed back and chose two direct, feature-specific DTOs instead: `GeminiTextIn
 When dividing business logic between services, I proposed that `StyleService` should upload the book file to Gemini. Codex initially pushed back because it thought this would make the Style step responsible for creating the project and send the book text to Gemini again.
 
 I disagreed because `ProjectService` only receives the user's uploaded or pasted text, saves the local `.txt` file, and creates the project record. It does not call Gemini. When the user explicitly starts the Style step, `StyleService` uploads the already-saved file for the first time, receives the Gemini file URI, and stores that URI together with the initial book interaction ID in the step's `StepData`. Later steps reuse the stored interaction chain, so the book is not uploaded or sent again.
+
+
+## If I had one more day 
+I would write more tests to cover a wider range of use cases. The current number of test cases is still limited, which means important paths may be missed and could lead to unexpected behavior in critical scenarios. My priority would be to make sure the application works correctly and is stable before focusing on anything else.

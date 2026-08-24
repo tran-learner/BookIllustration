@@ -443,6 +443,39 @@ body {
   color: var(--grad-ink);
 }
 
+.step-panel {
+  min-height: 132px;
+  padding: 24px;
+  border: 1px solid var(--border-2);
+  border-radius: 12px;
+  background: var(--grad-white);
+}
+
+.step-panel .status-line {
+  display: flex;
+  min-height: 20px;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  color: var(--grad-ink-2);
+  font-size: 13px;
+}
+
+.step-panel .help {
+  margin: 0;
+  color: var(--grad-ink-3);
+  font-size: 12px;
+}
+
+.step-panel .gd-btn {
+  min-width: 190px;
+  margin-top: 14px;
+}
+
+.style-step-field {
+  margin-bottom: 14px;
+}
+
 .project-detail-grid {
   display: grid;
   grid-template-columns: 2fr 1fr;
