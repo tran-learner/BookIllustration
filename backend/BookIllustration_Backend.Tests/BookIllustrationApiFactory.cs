@@ -19,6 +19,10 @@ public class BookIllustrationApiFactory : WebApplicationFactory<global::Program>
         Path.GetTempPath(),
         $"book-illustration-test-{Guid.NewGuid()}.db");
 
+    public string IllustrationsDirectory { get; } = Path.Combine(
+        Path.GetTempPath(),
+        $"book-illustration-illustrations-{Guid.NewGuid()}");
+
     public string BookTextPath => Path.ChangeExtension(DatabasePath, ".txt");
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
@@ -31,6 +35,7 @@ public class BookIllustrationApiFactory : WebApplicationFactory<global::Program>
                 new Dictionary<string, string?>
                 {
                     ["ConnectionStrings:AppDatabase"] = $"Data Source={DatabasePath}",
+                    ["FileStorage:IllustrationsDirectory"] = IllustrationsDirectory,
                     ["JWT_SIGNING_KEY"] =
                         "test-signing-key-that-is-long-enough-for-jwt-validation",
                     ["Jwt:Issuer"] = "BookIllustrationTestBackend",
@@ -65,6 +70,22 @@ public class BookIllustrationApiFactory : WebApplicationFactory<global::Program>
         if (disposing && File.Exists(BookTextPath))
         {
             File.Delete(BookTextPath);
+        }
+
+        if (disposing && Directory.Exists(IllustrationsDirectory))
+        {
+            var temporaryDirectory = Path.GetFullPath(Path.GetTempPath());
+            var illustrationsDirectory = Path.GetFullPath(IllustrationsDirectory);
+
+            if (!illustrationsDirectory.StartsWith(
+                    temporaryDirectory,
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException(
+                    "The test illustrations directory is not inside the temporary directory.");
+            }
+
+            Directory.Delete(illustrationsDirectory, recursive: true);
         }
     }
 }

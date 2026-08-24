@@ -78,6 +78,10 @@ public class FakeGeminiHandler : HttpMessageHandler
                     "previous_interaction_id",
                     out var previousInteractionId)
                 && previousInteractionId.GetString() == "style-interaction-id";
+            var input = requestJson.RootElement.TryGetProperty("input", out var inputElement)
+                && inputElement.ValueKind == JsonValueKind.String
+                ? inputElement.GetString()
+                : null;
             var interactionRequestNumber = Interlocked.Increment(
                 ref _interactionRequestCount);
 
@@ -110,6 +114,41 @@ public class FakeGeminiHandler : HttpMessageHandler
                             {
                               "type": "text",
                               "text": "[{\"name\":\"Alice\",\"prompt\":\"Alice is an adult woman with warm brown eyes, a gentle smile, a blue wool coat, and a weathered leather satchel. Create a detailed storybook portrait with soft watercolor texture, natural morning light, delicate facial features, and a calm, curious expression.\"}]"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                    """);
+            }
+
+            if (input?.StartsWith(
+                    "You are going to generate portrait images",
+                    StringComparison.Ordinal) == true)
+            {
+                return CreateJsonResponse("""
+                    {
+                      "id": "portrait-image-context-id",
+                      "steps": []
+                    }
+                    """);
+            }
+
+            if (input?.StartsWith(
+                    "Create an illustration for ",
+                    StringComparison.Ordinal) == true)
+            {
+                return CreateJsonResponse("""
+                    {
+                      "id": "portrait-image-interaction-id",
+                      "steps": [
+                        {
+                          "type": "model_output",
+                          "content": [
+                            {
+                              "type": "image",
+                              "data": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADElEQVR42mNk+M/wHwAF/gL+0pY9WQAAAABJRU5ErkJggg==",
+                              "mime_type": "image/png"
                             }
                           ]
                         }

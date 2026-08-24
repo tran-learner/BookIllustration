@@ -92,6 +92,39 @@ public class GeminiClient(HttpClient httpClient, GeminiOptions options)
         return ExtractImage(document.RootElement, interactionId);
     }
 
+    public async Task<GeminiImageInteractionContext> CreateImageInteractionContextAsync(
+        string input,
+        CancellationToken cancellationToken = default)
+    {
+        var requestBody = new Dictionary<string, object?>
+        {
+            ["model"] = options.ImageModel,
+            ["input"] = input
+        };
+
+        using var response = await httpClient.PostAsJsonAsync(
+            "interactions",
+            requestBody,
+            cancellationToken);
+
+        var responseJson = await response.Content.ReadAsStringAsync(cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new HttpRequestException(
+                $"Gemini request failed with status {(int)response.StatusCode}: {responseJson}");
+        }
+
+        using var document = JsonDocument.Parse(responseJson);
+
+        return new GeminiImageInteractionContext
+        {
+            InteractionId = document.RootElement.GetProperty("id").GetString()
+                ?? throw new InvalidOperationException(
+                    "Gemini returned an interaction without an ID.")
+        };
+    }
+
     public async Task<GeminiTextInteraction> CreateBookInteractionAsync(
         string uploadedFileUri,
         string systemInstruction,

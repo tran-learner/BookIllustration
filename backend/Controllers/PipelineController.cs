@@ -14,7 +14,8 @@ namespace BookIllustration_Backend.Controllers;
 public class PipelineController(
     AppDbContext dbContext,
     StyleService styleService,
-    CharacterService characterService) : ControllerBase
+    CharacterService characterService,
+    PortraitService portraitService) : ControllerBase
 {
     [HttpPost("style")]
     public async Task<IActionResult> RunStyle(
@@ -79,6 +80,39 @@ public class PipelineController(
         try
         {
             await characterService.RunCharacterStepAsync(projectId, cancellationToken);
+            return NoContent();
+        }
+        catch (InvalidOperationException exception)
+        {
+            return Conflict(new { message = exception.Message });
+        }
+    }
+
+    [HttpPost("portraits")]
+    public async Task<IActionResult> RunPortraits(
+        int projectId,
+        CancellationToken cancellationToken)
+    {
+        var userEmail = User.FindFirst(ClaimTypes.Email)?.Value;
+
+        if (string.IsNullOrWhiteSpace(userEmail))
+        {
+            return Unauthorized();
+        }
+
+        var ownsProject = await dbContext.Projects.AnyAsync(
+            project => project.ProjectId == projectId
+                && project.UserEmail == userEmail,
+            cancellationToken);
+
+        if (!ownsProject)
+        {
+            return NotFound();
+        }
+
+        try
+        {
+            await portraitService.RunPortraitStepAsync(projectId, cancellationToken);
             return NoContent();
         }
         catch (InvalidOperationException exception)

@@ -12,8 +12,10 @@ public class CharacterService(AppDbContext dbContext, GeminiClient geminiClient)
     private static readonly JsonSerializerOptions StepDataJsonOptions =
         new(JsonSerializerDefaults.Web);
 
+    private const int MaxCharacters = 2;
+
     private const string CharacterPromptInstruction =
-        "Can you describe the main characters (only the adults) and prepare a prompt describing them with as much details as possible (use the descriptions from the book) so Nano Banana can generate images of them? Each prompt should be at least 50 words.";
+        "Can you describe at most two main characters (only the adults) and prepare a prompt describing them with as much details as possible (use the descriptions from the book) so Nano Banana can generate images of them? Each prompt should be at least 50 words.";
 
     private static readonly object CharacterResponseFormat = new
     {
@@ -22,6 +24,7 @@ public class CharacterService(AppDbContext dbContext, GeminiClient geminiClient)
         schema = new
         {
             type = "array",
+            maxItems = MaxCharacters,
             items = new
             {
                 type = "object",
@@ -172,6 +175,8 @@ public class CharacterService(AppDbContext dbContext, GeminiClient geminiClient)
             throw new InvalidOperationException(
                 "Gemini returned an invalid character response.");
         }
+
+        characterPrompts = characterPrompts.Take(MaxCharacters).ToList();
 
         stepData.CharacterInteractionId = characterInteraction.InteractionId;
         characterStep.StepData = JsonSerializer.Serialize(stepData, StepDataJsonOptions);

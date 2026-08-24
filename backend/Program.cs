@@ -1,5 +1,6 @@
 using System.Text;
 using BookIllustration_Backend.Data;
+using BookIllustration_Backend.Models.Configuration;
 using BookIllustration_Backend.Services.Authentication;
 using BookIllustration_Backend.Services.GeminiFeatures;
 using BookIllustration_Backend.Services.IllustrationPipeline;
@@ -78,9 +79,13 @@ builder.Services
 
 builder.Services.AddAuthorization();
 
+builder.Services.Configure<FileStorageOptions>(
+    builder.Configuration.GetSection(FileStorageOptions.SectionName));
+
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<StyleService>();
 builder.Services.AddScoped<CharacterService>();
+builder.Services.AddScoped<PortraitService>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
