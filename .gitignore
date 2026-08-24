@@ -23,9 +23,9 @@ yarn-debug.log*
 pnpm-debug.log*
 
 # ASP.NET Core build and IDE artifacts
-backend/bin/
-backend/obj/
-backend/TestResults/
+backend/**/bin/
+backend/**/obj/
+backend/**/TestResults/
 backend/.vs/
 backend/appsettings.Development.json
 *.user
