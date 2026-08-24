@@ -35,3 +35,23 @@ BookIllustration_Backend.Tests test succeeded (2.8s)
 Test summary: total: 2, failed: 0, succeeded: 2, skipped: 0, duration: 2.8s
 Build succeeded in 4.7s
 
+** Portrait step - 21:00 24/08/2026 **
+
+- Happy path with mocked Gemini responses. Expected: an authenticated project owner receives `204 No Content`; the Portraits step becomes `Completed`; each pending character receives an illustration path; the matching image files are saved in the isolated illustrations directory; and a pending Chapters step is created with the character and image interaction IDs in `StepData`.
+
+Test result:
+ BookIllustration_Backend.Tests test succeeded (2.8s)
+
+Test summary: total: 2, failed: 0, succeeded: 2, skipped: 0, duration: 2.8s
+Build succeeded in 4.6s
+
+** Chapters step - 21:02 24/08/2026 **
+
+- Happy path with mocked Gemini responses. Expected: an authenticated project owner receives `204 No Content`; the Chapters step becomes `Completed`; the generated chapter prompt and chapter interaction ID are saved in `StepData`; the Chapter record is persisted; and a pending Illustrations step is created with the image interaction ID in `StepData`.
+
+Test result:
+ BookIllustration_Backend.Tests test succeeded (2.3s)
+
+Test summary: total: 2, failed: 0, succeeded: 2, skipped: 0, duration: 2.3s
+Build succeeded with 2 warning(s) in 5.1s
+

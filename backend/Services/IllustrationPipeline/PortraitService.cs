@@ -174,6 +174,13 @@ public class PortraitService(
             StepName = PipelineStepName.Chapters,
             Status = PipelineStepStatus.Pending,
             AttemptCount = 0,
+            StepData = JsonSerializer.Serialize(
+                new ChapterStepData
+                {
+                    CharacterInteractionId = stepData.CharacterInteractionId,
+                    ImageInteractionId = stepData.ImageInteractionId
+                },
+                StepDataJsonOptions),
             UpdatedAt = portraitStep.UpdatedAt.AddTicks(1),
             ProjectId = portraitStep.ProjectId,
             Project = portraitStep.Project

@@ -86,6 +86,7 @@ builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<StyleService>();
 builder.Services.AddScoped<CharacterService>();
 builder.Services.AddScoped<PortraitService>();
+builder.Services.AddScoped<ChapterService>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

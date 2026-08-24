@@ -157,6 +157,28 @@ public class FakeGeminiHandler : HttpMessageHandler
                     """);
             }
 
+            if (input?.StartsWith(
+                    "Now, for each chapters of the book",
+                    StringComparison.Ordinal) == true)
+            {
+                return CreateJsonResponse("""
+                    {
+                      "id": "chapter-interaction-id",
+                      "steps": [
+                        {
+                          "type": "model_output",
+                          "content": [
+                            {
+                              "type": "text",
+                              "text": "[{\"name\":\"Chapter One\",\"prompt\":\"A detailed single-image storybook illustration of the opening chapter, with warm watercolor texture, an expressive riverside setting, and carefully described adult characters.\"}]"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                    """);
+            }
+
             return interactionRequestNumber switch
             {
                 1 => CreateJsonResponse("""
