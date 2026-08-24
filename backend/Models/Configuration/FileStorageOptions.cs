@@ -8,4 +8,6 @@ public class FileStorageOptions
         "AppData/Illustrations";
 
     public string BooksDirectory { get; set; } = "AppData/Books";
+
+    public long MaxBookTextPreviewBytes { get; set; } = 1_048_576;
 }

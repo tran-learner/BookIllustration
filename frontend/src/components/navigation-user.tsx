@@ -1,26 +1,11 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCurrentUser } from "@/components/current-user-provider";
 
 export default function NavigationUser() {
   const router = useRouter();
-  const [fullName, setFullName] = useState<string | null>(null);
-
-  useEffect(() => {
-    async function loadUser() {
-      const response = await fetch("/api/auth/session", {
-        credentials: "include",
-      });
-
-      if (response.ok) {
-        const session = (await response.json()) as { fullName: string };
-        setFullName(session.fullName);
-      }
-    }
-
-    void loadUser();
-  }, []);
+  const { user, clearUser } = useCurrentUser();
 
   async function handleSignOut() {
     await fetch("/api/auth/session", {
@@ -28,15 +13,16 @@ export default function NavigationUser() {
       credentials: "include",
     });
 
+    clearUser();
     router.replace("/login");
     router.refresh();
   }
 
-  if (!fullName) {
+  if (!user) {
     return null;
   }
 
-  const initials = fullName
+  const initials = user.fullName
     .split(" ")
     .filter(Boolean)
     .map((word) => word[0])
@@ -47,7 +33,7 @@ export default function NavigationUser() {
   return (
     <div className="app-nav-user">
       <div className="app-nav-avatar">{initials}</div>
-      <span>{fullName}</span>
+      <span>{user.fullName}</span>
       <button type="button" className="app-sign-out" onClick={handleSignOut}>
         Sign out
       </button>

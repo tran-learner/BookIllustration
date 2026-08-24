@@ -325,3 +325,258 @@ body {
   width: 100%;
   margin-top: 20px;
 }
+
+.project-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.project-list-message {
+  margin: 0;
+  color: var(--grad-ink-2);
+  font-size: 14px;
+}
+
+.project-detail-output {
+  width: 100%;
+  max-width: 1100px;
+  margin: 48px auto;
+  padding: 24px;
+  overflow-x: auto;
+  color: var(--grad-ink-2);
+  font-size: 14px;
+  white-space: pre-wrap;
+}
+
+.project-detail-title {
+  margin: 0 0 4px;
+  color: var(--grad-ink);
+  font-size: 22px;
+  line-height: 1.1;
+}
+
+.project-detail-meta {
+  margin: 0 0 24px;
+  color: var(--grad-ink-3);
+  font-size: 12px;
+}
+
+.stepper {
+  display: flex;
+  align-items: center;
+  margin-bottom: 48px;
+  gap: 6px;
+}
+
+.stepper-item {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  align-items: center;
+}
+
+.stepper-step {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 8px;
+}
+
+.stepper-number {
+  display: inline-flex;
+  width: 28px;
+  height: 28px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #bab7b1;
+  color: var(--grad-ink-2);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.stepper-label {
+  color: var(--grad-ink-3);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.stepper-step.is-done .stepper-number {
+  background: var(--grad-ink);
+  color: var(--grad-white);
+}
+
+.stepper-step.is-done .stepper-label,
+.stepper-step.is-current .stepper-label {
+  color: var(--grad-ink);
+}
+
+.stepper-step.is-current .stepper-number {
+  background: var(--grad-orange);
+  color: var(--grad-white);
+}
+
+.stepper-connector {
+  min-width: 16px;
+  height: 1px;
+  flex: 1;
+  margin: 0 8px;
+  background: #bab7b1;
+}
+
+.stepper-connector.is-done {
+  background: var(--grad-orange);
+}
+
+.step-content-placeholder {
+  min-height: 132px;
+  padding: 24px;
+  border: 1px solid var(--border-2);
+  border-radius: 12px;
+  background: var(--grad-white);
+  color: var(--grad-ink-2);
+  font-size: 13px;
+}
+
+.step-content-placeholder strong {
+  color: var(--grad-ink);
+}
+
+.project-detail-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 48px;
+  align-items: start;
+}
+
+.side-note {
+  min-height: 92px;
+  padding: 16px;
+  border-radius: 12px;
+  background: #f2eee7;
+}
+
+.side-note h2 {
+  margin: 0 0 8px;
+  color: var(--grad-ink-3);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.side-note p {
+  margin: 0;
+  color: var(--grad-ink-2);
+  font-size: 13px;
+}
+
+.side-note-book-text {
+  max-height: 320px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+}
+
+@media (max-width: 720px) {
+  .stepper-label {
+    display: none;
+  }
+
+  .project-detail-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.project-row {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 16px 24px;
+  border: 1px solid var(--border-2);
+  border-radius: 12px;
+  background: var(--grad-white);
+  color: inherit;
+  text-decoration: none;
+  transition: box-shadow 200ms ease;
+}
+
+.project-row:hover {
+  box-shadow: 0 2px 6px rgba(35, 31, 32, 0.06),
+    0 1px 2px rgba(35, 31, 32, 0.04);
+}
+
+.project-row-title {
+  min-width: 0;
+  flex: 1;
+}
+
+.project-row-title h2 {
+  margin: 0 0 3px;
+  overflow: hidden;
+  color: var(--grad-ink);
+  font-size: 15px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.project-meta {
+  color: var(--grad-ink-3);
+  font-size: 12px;
+}
+
+.progress-mini {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 4px;
+}
+
+.progress-segment {
+  display: inline-block;
+  width: 18px;
+  height: 4px;
+  border-radius: 2px;
+  background: #bab7b1;
+}
+
+.progress-segment.is-complete {
+  background: var(--grad-orange);
+}
+
+.gd-pill {
+  display: inline-flex;
+  min-width: 104px;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: var(--grad-orange);
+  color: var(--grad-white);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.gd-pill-gray {
+  background: var(--grad-ink-3);
+}
+
+.gd-pill-ink {
+  background: var(--grad-ink);
+}
+
+.gd-pill-dot {
+  width: 6px;
+  height: 6px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: var(--grad-white);
+}
+
+@media (max-width: 720px) {
+  .project-row {
+    flex-wrap: wrap;
+  }
+}

@@ -80,4 +80,8 @@ Test file: `backend\BookIllustration_Backend.Tests\IllustrationTesting.cs`
 
 - Happy path with mocked Gemini responses. Expected: an authenticated project owner receives `204 No Content`; the Illustrations step becomes `Completed`; each pending chapter receives an illustration path; and the matching image files are saved in the isolated illustrations directory.
 
-Test result: pending execution.
+Test result: 
+BookIllustration_Backend.Tests test succeeded (3.0s)
+
+Test summary: total: 2, failed: 0, succeeded: 2, skipped: 0, duration: 3.0s
+Build succeeded with 2 warning(s) in 6.3s
