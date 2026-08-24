@@ -214,7 +214,13 @@ public class StyleService(AppDbContext dbContext, GeminiClient geminiClient)
             StepName = PipelineStepName.Characters,
             Status = PipelineStepStatus.Pending,
             AttemptCount = 0,
-            UpdatedAt = DateTime.UtcNow,
+            StepData = JsonSerializer.Serialize(
+                new CharacterStepData
+                {
+                    StyleInteractionId = styleInteraction.InteractionId
+                },
+                StepDataJsonOptions),
+            UpdatedAt = styleStep.UpdatedAt.AddTicks(1),
             ProjectId = styleStep.ProjectId,
             Project = styleStep.Project
         });

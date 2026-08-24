@@ -80,6 +80,7 @@ builder.Services.AddAuthorization();
 
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<StyleService>();
+builder.Services.AddScoped<CharacterService>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

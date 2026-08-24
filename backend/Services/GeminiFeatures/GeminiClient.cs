@@ -10,7 +10,8 @@ public class GeminiClient(HttpClient httpClient, GeminiOptions options)
     public async Task<GeminiTextInteraction> CreateTextInteractionAsync(
         string input,
         string? previousInteractionId = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        object? responseFormat = null)
     {
         var requestBody = new Dictionary<string, object?>
         {
@@ -21,6 +22,11 @@ public class GeminiClient(HttpClient httpClient, GeminiOptions options)
         if (!string.IsNullOrWhiteSpace(previousInteractionId))
         {
             requestBody["previous_interaction_id"] = previousInteractionId;
+        }
+
+        if (responseFormat is not null)
+        {
+            requestBody["response_format"] = responseFormat;
         }
 
         using var response = await httpClient.PostAsJsonAsync(

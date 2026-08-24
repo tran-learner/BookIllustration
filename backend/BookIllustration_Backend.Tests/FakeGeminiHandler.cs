@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text;
+using System.Text.Json;
 
 namespace BookIllustration_Backend.Tests;
 
@@ -70,6 +71,13 @@ public class FakeGeminiHandler : HttpMessageHandler
 
         if (path == "/v1beta/interactions")
         {
+            var requestBody = await request.Content!.ReadAsStringAsync(cancellationToken);
+            using var requestJson = JsonDocument.Parse(requestBody);
+            var isCharacterInteraction =
+                requestJson.RootElement.TryGetProperty(
+                    "previous_interaction_id",
+                    out var previousInteractionId)
+                && previousInteractionId.GetString() == "style-interaction-id";
             var interactionRequestNumber = Interlocked.Increment(
                 ref _interactionRequestCount);
 
@@ -88,6 +96,26 @@ public class FakeGeminiHandler : HttpMessageHandler
             if (releasePausedInteraction is not null)
             {
                 await releasePausedInteraction.Task.WaitAsync(cancellationToken);
+            }
+
+            if (isCharacterInteraction)
+            {
+                return CreateJsonResponse("""
+                    {
+                      "id": "character-interaction-id",
+                      "steps": [
+                        {
+                          "type": "model_output",
+                          "content": [
+                            {
+                              "type": "text",
+                              "text": "[{\"name\":\"Alice\",\"prompt\":\"Alice is an adult woman with warm brown eyes, a gentle smile, a blue wool coat, and a weathered leather satchel. Create a detailed storybook portrait with soft watercolor texture, natural morning light, delicate facial features, and a calm, curious expression.\"}]"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                    """);
             }
 
             return interactionRequestNumber switch

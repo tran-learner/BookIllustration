@@ -10,13 +10,13 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace BookIllustration_Backend.Tests;
 
-public class PipelineControllerTests
+public class CharacterTesting
 {
     [Fact]
-    public async Task RunStyle_WithOwnedPendingProject_CompletesStyleAndCreatesCharactersStep()
+    public async Task RunCharacters_WithOwnedPendingProject_CompletesAndCreatesPortraitsStep()
     {
         using var factory = new BookIllustrationApiFactory();
-        var seededProject = await StyleTestDataSeeder.SeedAsync(factory);
+        var seededProject = await CharacterTestDataSeeder.SeedAsync(factory);
 
         using var client = factory.CreateClient(
             new WebApplicationFactoryClientOptions
@@ -29,50 +29,51 @@ public class PipelineControllerTests
             new
             {
                 email = seededProject.Email,
-                fullName = "Style Test User"
+                fullName = "Character Test User"
             });
 
         Assert.Equal(HttpStatusCode.OK, signInResponse.StatusCode);
 
-        var styleResponse = await client.PostAsJsonAsync(
-            $"/api/projects/{seededProject.ProjectId}/pipeline/style",
-            new { style = (string?)null });
+        var characterResponse = await client.PostAsync(
+            $"/api/projects/{seededProject.ProjectId}/pipeline/characters",
+            content: null);
 
-        Assert.Equal(HttpStatusCode.NoContent, styleResponse.StatusCode);
+        Assert.Equal(HttpStatusCode.NoContent, characterResponse.StatusCode);
 
         using var scope = factory.Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
-        var project = await dbContext.Projects.SingleAsync(
-            project => project.ProjectId == seededProject.ProjectId);
-
-        var styleStep = await dbContext.PipelineSteps.SingleAsync(
-            step => step.ProjectId == seededProject.ProjectId
-                && step.StepName == PipelineStepName.Style);
-
-        var charactersStep = await dbContext.PipelineSteps.SingleAsync(
+        var characterStep = await dbContext.PipelineSteps.SingleAsync(
             step => step.ProjectId == seededProject.ProjectId
                 && step.StepName == PipelineStepName.Characters);
+        var portraitsStep = await dbContext.PipelineSteps.SingleAsync(
+            step => step.ProjectId == seededProject.ProjectId
+                && step.StepName == PipelineStepName.Portraits);
 
-        Assert.Equal(
-            "Whimsical watercolor storybook illustration.",
-            project.Style);
-        Assert.Equal(PipelineStepStatus.Completed, styleStep.Status);
-        Assert.NotNull(styleStep.CompletedAt);
-        Assert.Equal(PipelineStepStatus.Pending, charactersStep.Status);
+        Assert.Equal(PipelineStepStatus.Completed, characterStep.Status);
+        Assert.Equal(PipelineStepStatus.Pending, portraitsStep.Status);
+        Assert.NotNull(portraitsStep.StepData);
 
-        var characterStepData = JsonSerializer.Deserialize<CharacterStepData>(
-            charactersStep.StepData!,
+        var portraitStepData = JsonSerializer.Deserialize<PortraitStepData>(
+            portraitsStep.StepData!,
             new JsonSerializerOptions(JsonSerializerDefaults.Web));
 
-        Assert.Equal("style-interaction-id", characterStepData?.StyleInteractionId);
+        Assert.NotNull(portraitStepData);
+        Assert.Equal(
+            "character-interaction-id",
+            portraitStepData!.CharacterInteractionId);
+
+        var characterPrompt = Assert.Single(portraitStepData.CharacterPrompts);
+        Assert.Equal("Alice", characterPrompt.Name);
+        Assert.Contains(
+            "Alice is an adult woman with warm brown eyes",
+            characterPrompt.Prompt);
     }
 
     [Fact]
-    public async Task RunStyle_WhileAnotherRequestIsRunning_ReturnsConflict()
+    public async Task RunCharacters_WhileAnotherRequestIsRunning_ReturnsConflict()
     {
         using var factory = new BookIllustrationApiFactory();
-        var seededProject = await StyleTestDataSeeder.SeedAsync(factory);
+        var seededProject = await CharacterTestDataSeeder.SeedAsync(factory);
         factory.GeminiHandler.PauseNextInteraction();
 
         using var client = factory.CreateClient(
@@ -86,23 +87,19 @@ public class PipelineControllerTests
             new
             {
                 email = seededProject.Email,
-                fullName = "Style Test User"
+                fullName = "Character Test User"
             });
 
         Assert.Equal(HttpStatusCode.OK, signInResponse.StatusCode);
 
-        var styleUrl =
-            $"/api/projects/{seededProject.ProjectId}/pipeline/style";
+        var characterUrl =
+            $"/api/projects/{seededProject.ProjectId}/pipeline/characters";
 
-        var firstRequest = client.PostAsJsonAsync(
-            styleUrl,
-            new { style = (string?)null });
+        var firstRequest = client.PostAsync(characterUrl, content: null);
 
         await factory.GeminiHandler.WaitUntilPausedInteractionStartsAsync();
 
-        var duplicateResponse = await client.PostAsJsonAsync(
-            styleUrl,
-            new { style = (string?)null });
+        var duplicateResponse = await client.PostAsync(characterUrl, content: null);
 
         Assert.Equal(HttpStatusCode.Conflict, duplicateResponse.StatusCode);
 
