@@ -1,8 +1,13 @@
-export default function StyleStep() {
+import {
+  pipelineStepStatusLabels,
+  type PipelineStepResponse,
+} from "@/types/project";
+
+export default function StyleStep({ step }: { step: PipelineStepResponse }) {
   return (
     <section className="step-panel">
       <div className="status-line">
-        Ready for the next step: <strong>Style</strong>.
+        <strong>Style</strong> is {pipelineStepStatusLabels[step.status] ?? "in an unknown state"}.
       </div>
 
       <div className="gd-field style-step-field">

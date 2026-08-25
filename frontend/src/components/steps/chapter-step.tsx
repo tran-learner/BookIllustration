@@ -1,8 +1,13 @@
-export default function ChapterStep() {
+import {
+  pipelineStepStatusLabels,
+  type PipelineStepResponse,
+} from "@/types/project";
+
+export default function ChapterStep({ step }: { step: PipelineStepResponse }) {
   return (
     <section className="step-panel">
       <div className="status-line">
-        Ready for the next step: <strong>Chapters</strong>.
+        <strong>Chapters</strong> is {pipelineStepStatusLabels[step.status] ?? "in an unknown state"}.
       </div>
 
       <p className="help">

@@ -4,18 +4,8 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useCurrentUser } from "@/components/current-user-provider";
-
-type PipelineStepResponse = {
-  pipelineStepId: string;
-  stepName: number;
-  status: number;
-  attemptCount: number;
-  stepData: string | null;
-  startedAt: string | null;
-  updatedAt: string;
-  completedAt: string | null;
-  errorMessage: string | null;
-};
+import StepDetail from "@/components/steps/step-detail";
+import type { PipelineStepResponse } from "@/types/project";
 
 type CharacterResponse = {
   characterId: number;
@@ -81,14 +71,6 @@ function ProjectStepper({ pipelineSteps }: { pipelineSteps: PipelineStepResponse
         );
       })}
     </div>
-  );
-}
-
-function StepContentPlaceholder({ currentStepLabel }: { currentStepLabel: string }) {
-  return (
-    <section className="step-content-placeholder">
-      Content for the <strong>{currentStepLabel}</strong> step will appear here.
-    </section>
   );
 }
 
@@ -231,13 +213,9 @@ export default function ProjectDetailPage() {
     return <p className="project-detail-output form-error">{error}</p>;
   }
 
-  const currentStep = stepDefinitions.find((definition) => {
-    const pipelineStep = project.pipelineSteps.find(
-      (step) => step.stepName === definition.stepName,
-    );
-
-    return pipelineStep?.status !== completedStatus;
-  });
+  const currentStep = project.pipelineSteps.find(
+    (step) => step.status !== completedStatus,
+  ) ?? null;
 
   return (
     <div className="app-body">
@@ -255,9 +233,7 @@ export default function ProjectDetailPage() {
 
       <div className="project-detail-grid">
         <div>
-          <StepContentPlaceholder
-            currentStepLabel={currentStep?.label ?? "completed project"}
-          />
+          <StepDetail step={currentStep} />
         </div>
 
         <ProjectSideNote projectId={project.projectId} style={project.style} />

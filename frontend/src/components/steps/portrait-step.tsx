@@ -1,8 +1,13 @@
-export default function PortraitStep() {
+import {
+  pipelineStepStatusLabels,
+  type PipelineStepResponse,
+} from "@/types/project";
+
+export default function PortraitStep({ step }: { step: PipelineStepResponse }) {
   return (
     <section className="step-panel">
       <div className="status-line">
-        Ready for the next step: <strong>Portraits</strong>.
+        <strong>Portraits</strong> is {pipelineStepStatusLabels[step.status] ?? "in an unknown state"}.
       </div>
 
       <p className="help">

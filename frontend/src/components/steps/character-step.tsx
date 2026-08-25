@@ -1,8 +1,13 @@
-export default function CharacterStep() {
+import {
+  pipelineStepStatusLabels,
+  type PipelineStepResponse,
+} from "@/types/project";
+
+export default function CharacterStep({ step }: { step: PipelineStepResponse }) {
   return (
     <section className="step-panel">
       <div className="status-line">
-        Ready for the next step: <strong>Characters</strong>.
+        <strong>Characters</strong> is {pipelineStepStatusLabels[step.status] ?? "in an unknown state"}.
       </div>
 
       <p className="help">
