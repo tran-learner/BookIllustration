@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useCurrentUser } from "@/components/current-user-provider";
 import StepDetail from "@/components/steps/step-detail";
 import type { PipelineStepResponse } from "@/types/project";
@@ -38,6 +38,7 @@ const stepDefinitions = [
 ];
 
 const completedStatus = 2;
+const runningStatus = 1;
 
 function ProjectStepper({ pipelineSteps }: { pipelineSteps: PipelineStepResponse[] }) {
   const firstIncompleteIndex = stepDefinitions.findIndex((definition) => {
@@ -167,7 +168,7 @@ export default function ProjectDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
 
-  useEffect(() => {
+  const loadProject = useCallback(async () => {
     const projectId = Number(id);
 
     if (!Number.isInteger(projectId) || projectId <= 0) {
@@ -176,34 +177,51 @@ export default function ProjectDetailPage() {
       return;
     }
 
-    async function loadProject() {
-      try {
-        const response = await fetch(`/api/projects/${projectId}`, {
-          credentials: "include",
-        });
+    try {
+      const response = await fetch(`/api/projects/${projectId}`, {
+        credentials: "include",
+      });
 
-        if (response.status === 404) {
-          setError("The project was not found.");
-          return;
-        }
-
-        if (!response.ok) {
-          setError("Unable to load the project. Please try again.");
-          return;
-        }
-
-        const data = (await response.json()) as ProjectDetailResponse;
-        console.log("Project detail response:", data);
-        setProject(data);
-      } catch {
-        setError("Unable to reach the server. Please try again.");
-      } finally {
-        setIsLoading(false);
+      if (response.status === 404) {
+        setError("The project was not found.");
+        return;
       }
+
+      if (!response.ok) {
+        setError("Unable to load the project. Please try again.");
+        return;
+      }
+
+      const data = (await response.json()) as ProjectDetailResponse;
+      console.log("Project detail response:", data);
+      setProject(data);
+    } catch {
+      setError("Unable to reach the server. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [id]);
+
+  useEffect(() => {
+    void loadProject();
+  }, [loadProject]);
+
+  const hasRunningStep =
+    project?.pipelineSteps.some(
+      (step) => step.status === runningStatus,
+    ) ?? false;
+
+  useEffect(() => {
+    if (!hasRunningStep) {
+      return;
     }
 
-    void loadProject();
-  }, [id]);
+    const intervalId = window.setInterval(() => {
+      void loadProject();
+    }, 1000);
+
+    return () => window.clearInterval(intervalId);
+  }, [hasRunningStep, loadProject]);
 
   if (isLoading) {
     return <p className="project-detail-output">Loading project…</p>;
@@ -233,7 +251,11 @@ export default function ProjectDetailPage() {
 
       <div className="project-detail-grid">
         <div>
-          <StepDetail step={currentStep} />
+          <StepDetail
+            step={currentStep}
+            projectId={project.projectId}
+            onProjectUpdated={loadProject}
+          />
         </div>
 
         <ProjectSideNote projectId={project.projectId} style={project.style} />

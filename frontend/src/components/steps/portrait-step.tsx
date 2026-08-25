@@ -1,12 +1,62 @@
+"use client";
+
+import { useState } from "react";
 import {
   pipelineStepStatusLabels,
   type PipelineStepResponse,
 } from "@/types/project";
 
-export default function PortraitStep({ step }: { step: PipelineStepResponse }) {
+type PortraitStepProps = {
+  step: PipelineStepResponse;
+  projectId: number;
+  onProjectUpdated: () => Promise<void>;
+};
+
+export default function PortraitStep({
+  step,
+  projectId,
+  onProjectUpdated,
+}: PortraitStepProps) {
+  const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const isRunning = step.status === 1;
+
+  async function handleGeneratePortraits() {
+    setError("");
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch(
+        `/api/projects/${projectId}/pipeline/portraits`,
+        {
+          method: "POST",
+          credentials: "include",
+        },
+      );
+
+      const payload = (await response.json().catch(() => null)) as {
+        message?: string;
+      } | null;
+
+      if (response.status !== 202) {
+        setError(
+          payload?.message ?? "Unable to start Portrait generation. Please try again.",
+        );
+        return;
+      }
+
+      await onProjectUpdated();
+    } catch {
+      setError("Unable to reach the server. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
   return (
     <section className="step-panel">
       <div className="status-line">
+        {isRunning && <span className="spinner" aria-hidden="true" />}
         <strong>Portraits</strong> is {pipelineStepStatusLabels[step.status] ?? "in an unknown state"}.
       </div>
 
@@ -15,7 +65,19 @@ export default function PortraitStep({ step }: { step: PipelineStepResponse }) {
         shows the same in-flight state until it lands.
       </p>
 
-      <button type="button" className="gd-btn gd-btn-primary">
+      {error && (
+        <p className="form-error" aria-live="polite">
+          {error}
+        </p>
+      )}
+
+      <button
+        type="button"
+        className="gd-btn gd-btn-primary"
+        onClick={handleGeneratePortraits}
+        disabled={isSubmitting || isRunning}
+      >
+        {isRunning && <span className="spinner" aria-hidden="true" />}
         Generate Portraits <span aria-hidden="true">→</span>
       </button>
     </section>

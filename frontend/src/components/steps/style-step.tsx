@@ -1,12 +1,67 @@
+"use client";
+
+import { useState } from "react";
 import {
   pipelineStepStatusLabels,
   type PipelineStepResponse,
 } from "@/types/project";
 
-export default function StyleStep({ step }: { step: PipelineStepResponse }) {
+type StyleStepProps = {
+  step: PipelineStepResponse;
+  projectId: number;
+  onProjectUpdated: () => Promise<void>;
+};
+
+export default function StyleStep({
+  step,
+  projectId,
+  onProjectUpdated,
+}: StyleStepProps) {
+  const [style, setStyle] = useState("");
+  const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const isRunning = step.status === 1;
+
+  async function handleGenerateStyle() {
+    setError("");
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch(
+        `/api/projects/${projectId}/pipeline/style`,
+        {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            style: style.trim() || null,
+          }),
+        },
+      );
+
+      const payload = (await response.json().catch(() => null)) as {
+        message?: string;
+      } | null;
+
+      if (response.status !== 202) {
+        setError(
+          payload?.message ?? "Unable to start Style generation. Please try again.",
+        );
+        return;
+      }
+
+      await onProjectUpdated();
+    } catch {
+      setError("Unable to reach the server. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
   return (
     <section className="step-panel">
       <div className="status-line">
+        {isRunning && <span className="spinner" aria-hidden="true" />}
         <strong>Style</strong> is {pipelineStepStatusLabels[step.status] ?? "in an unknown state"}.
       </div>
 
@@ -14,6 +69,8 @@ export default function StyleStep({ step }: { step: PipelineStepResponse }) {
         <label htmlFor="style-input">Art style (optional)</label>
         <input
           id="style-input"
+          value={style}
+          onChange={(event) => setStyle(event.target.value)}
           placeholder="Leave blank to let Gemini choose a style based on your book"
         />
       </div>
@@ -23,7 +80,19 @@ export default function StyleStep({ step }: { step: PipelineStepResponse }) {
         shows the same in-flight state until it lands.
       </p>
 
-      <button type="button" className="gd-btn gd-btn-primary">
+      {error && (
+        <p className="form-error" aria-live="polite">
+          {error}
+        </p>
+      )}
+
+      <button
+        type="button"
+        className="gd-btn gd-btn-primary"
+        onClick={handleGenerateStyle}
+        disabled={isSubmitting || isRunning}
+      >
+        {isRunning && <span className="spinner" aria-hidden="true" />}
         Generate Style <span aria-hidden="true">→</span>
       </button>
     </section>
