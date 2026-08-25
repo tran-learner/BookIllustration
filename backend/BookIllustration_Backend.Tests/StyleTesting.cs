@@ -38,7 +38,13 @@ public class PipelineControllerTests
             $"/api/projects/{seededProject.ProjectId}/pipeline/style",
             new { style = (string?)null });
 
-        Assert.Equal(HttpStatusCode.NoContent, styleResponse.StatusCode);
+        Assert.Equal(HttpStatusCode.Accepted, styleResponse.StatusCode);
+
+        await WaitForStepStatusAsync(
+            factory,
+            seededProject.ProjectId,
+            PipelineStepName.Style,
+            PipelineStepStatus.Completed);
 
         using var scope = factory.Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -94,9 +100,11 @@ public class PipelineControllerTests
         var styleUrl =
             $"/api/projects/{seededProject.ProjectId}/pipeline/style";
 
-        var firstRequest = client.PostAsJsonAsync(
+        var firstResponse = await client.PostAsJsonAsync(
             styleUrl,
             new { style = (string?)null });
+
+        Assert.Equal(HttpStatusCode.Accepted, firstResponse.StatusCode);
 
         await factory.GeminiHandler.WaitUntilPausedInteractionStartsAsync();
 
@@ -108,8 +116,42 @@ public class PipelineControllerTests
 
         factory.GeminiHandler.ReleasePausedInteraction();
 
-        var firstResponse = await firstRequest;
+        await WaitForStepStatusAsync(
+            factory,
+            seededProject.ProjectId,
+            PipelineStepName.Style,
+            PipelineStepStatus.Completed);
 
-        Assert.Equal(HttpStatusCode.NoContent, firstResponse.StatusCode);
+    }
+
+    private static async Task WaitForStepStatusAsync(
+        BookIllustrationApiFactory factory,
+        int projectId,
+        PipelineStepName stepName,
+        PipelineStepStatus expectedStatus)
+    {
+        var timeoutAt = DateTime.UtcNow.AddSeconds(5);
+
+        while (DateTime.UtcNow < timeoutAt)
+        {
+            using var scope = factory.Services.CreateScope();
+            var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+            var status = await dbContext.PipelineSteps
+                .Where(step => step.ProjectId == projectId
+                    && step.StepName == stepName)
+                .Select(step => step.Status)
+                .SingleAsync();
+
+            if (status == expectedStatus)
+            {
+                return;
+            }
+
+            await Task.Delay(50);
+        }
+
+        throw new Xunit.Sdk.XunitException(
+            $"The {stepName} step did not reach {expectedStatus} within five seconds.");
     }
 }

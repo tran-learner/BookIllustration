@@ -90,6 +90,8 @@ builder.Services.AddScoped<CharacterService>();
 builder.Services.AddScoped<PortraitService>();
 builder.Services.AddScoped<ChapterService>();
 builder.Services.AddScoped<ChapterIllustrationService>();
+builder.Services.AddSingleton<IPipelineJobQueue, PipelineJobQueue>();
+builder.Services.AddHostedService<PipelineWorker>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

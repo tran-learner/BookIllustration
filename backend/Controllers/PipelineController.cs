@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using BookIllustration_Backend.Data;
 using BookIllustration_Backend.Models.DTOs.Pipeline;
+using BookIllustration_Backend.Models.Entities;
 using BookIllustration_Backend.Services.IllustrationPipeline;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -13,6 +14,7 @@ namespace BookIllustration_Backend.Controllers;
 [Route("api/projects/{projectId:int}/pipeline")]
 public class PipelineController(
     AppDbContext dbContext,
+    IPipelineJobQueue pipelineJobQueue,
     StyleService styleService,
     CharacterService characterService,
     PortraitService portraitService,
@@ -44,12 +46,16 @@ public class PipelineController(
 
         try
         {
-            await styleService.RunStyleStepAsync(
+            var runId = await styleService.ClaimStyleStepAsync(
                 projectId,
                 request.Style,
                 cancellationToken);
 
-            return NoContent();
+            await pipelineJobQueue.EnqueueAsync(
+                new PipelineJob(projectId, PipelineStepName.Style, runId),
+                CancellationToken.None);
+
+            return Accepted();
         }
         catch (InvalidOperationException exception)
         {
@@ -81,8 +87,15 @@ public class PipelineController(
 
         try
         {
-            await characterService.RunCharacterStepAsync(projectId, cancellationToken);
-            return NoContent();
+            var runId = await characterService.ClaimCharacterStepAsync(
+                projectId,
+                cancellationToken);
+
+            await pipelineJobQueue.EnqueueAsync(
+                new PipelineJob(projectId, PipelineStepName.Characters, runId),
+                CancellationToken.None);
+
+            return Accepted();
         }
         catch (InvalidOperationException exception)
         {
@@ -114,8 +127,15 @@ public class PipelineController(
 
         try
         {
-            await portraitService.RunPortraitStepAsync(projectId, cancellationToken);
-            return NoContent();
+            var runId = await portraitService.ClaimPortraitStepAsync(
+                projectId,
+                cancellationToken);
+
+            await pipelineJobQueue.EnqueueAsync(
+                new PipelineJob(projectId, PipelineStepName.Portraits, runId),
+                CancellationToken.None);
+
+            return Accepted();
         }
         catch (InvalidOperationException exception)
         {
@@ -147,8 +167,15 @@ public class PipelineController(
 
         try
         {
-            await chapterService.RunChapterStepAsync(projectId, cancellationToken);
-            return NoContent();
+            var runId = await chapterService.ClaimChapterStepAsync(
+                projectId,
+                cancellationToken);
+
+            await pipelineJobQueue.EnqueueAsync(
+                new PipelineJob(projectId, PipelineStepName.Chapters, runId),
+                CancellationToken.None);
+
+            return Accepted();
         }
         catch (InvalidOperationException exception)
         {
@@ -180,11 +207,15 @@ public class PipelineController(
 
         try
         {
-            await chapterIllustrationService.RunIllustrationsStepAsync(
+            var runId = await chapterIllustrationService.ClaimIllustrationsStepAsync(
                 projectId,
                 cancellationToken);
 
-            return NoContent();
+            await pipelineJobQueue.EnqueueAsync(
+                new PipelineJob(projectId, PipelineStepName.Illustrations, runId),
+                CancellationToken.None);
+
+            return Accepted();
         }
         catch (InvalidOperationException exception)
         {

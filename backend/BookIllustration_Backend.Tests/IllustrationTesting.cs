@@ -38,7 +38,12 @@ public class IllustrationTesting
             $"/api/projects/{seededProject.ProjectId}/pipeline/illustrations",
             content: null);
 
-        Assert.Equal(HttpStatusCode.NoContent, illustrationResponse.StatusCode);
+        Assert.Equal(HttpStatusCode.Accepted, illustrationResponse.StatusCode);
+
+        await WaitForIllustrationsStepStatusAsync(
+            factory,
+            seededProject.ProjectId,
+            PipelineStepStatus.Completed);
 
         using var scope = factory.Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -85,7 +90,9 @@ public class IllustrationTesting
         var illustrationUrl =
             $"/api/projects/{seededProject.ProjectId}/pipeline/illustrations";
 
-        var firstRequest = client.PostAsync(illustrationUrl, content: null);
+        var firstResponse = await client.PostAsync(illustrationUrl, content: null);
+
+        Assert.Equal(HttpStatusCode.Accepted, firstResponse.StatusCode);
 
         await factory.GeminiHandler.WaitUntilPausedInteractionStartsAsync();
 
@@ -95,8 +102,39 @@ public class IllustrationTesting
 
         factory.GeminiHandler.ReleasePausedInteraction();
 
-        var firstResponse = await firstRequest;
+        await WaitForIllustrationsStepStatusAsync(
+            factory,
+            seededProject.ProjectId,
+            PipelineStepStatus.Completed);
+    }
 
-        Assert.Equal(HttpStatusCode.NoContent, firstResponse.StatusCode);
+    private static async Task WaitForIllustrationsStepStatusAsync(
+        BookIllustrationApiFactory factory,
+        int projectId,
+        PipelineStepStatus expectedStatus)
+    {
+        var timeoutAt = DateTime.UtcNow.AddSeconds(5);
+
+        while (DateTime.UtcNow < timeoutAt)
+        {
+            using var scope = factory.Services.CreateScope();
+            var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+            var status = await dbContext.PipelineSteps
+                .Where(step => step.ProjectId == projectId
+                    && step.StepName == PipelineStepName.Illustrations)
+                .Select(step => step.Status)
+                .SingleAsync();
+
+            if (status == expectedStatus)
+            {
+                return;
+            }
+
+            await Task.Delay(50);
+        }
+
+        throw new Xunit.Sdk.XunitException(
+            $"The Illustrations step did not reach {expectedStatus} within five seconds.");
     }
 }

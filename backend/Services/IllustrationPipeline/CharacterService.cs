@@ -38,7 +38,7 @@ public class CharacterService(AppDbContext dbContext, GeminiClient geminiClient)
         }
     };
 
-    public async Task RunCharacterStepAsync(
+    public async Task<Guid> ClaimCharacterStepAsync(
         int projectId,
         CancellationToken cancellationToken = default)
     {
@@ -94,6 +94,14 @@ public class CharacterService(AppDbContext dbContext, GeminiClient geminiClient)
                 "The Characters step state changed before this request could start.");
         }
 
+        return runId;
+    }
+
+    public async Task ExecuteCharacterStepAsync(
+        int projectId,
+        Guid runId,
+        CancellationToken cancellationToken = default)
+    {
         try
         {
             await SetCharactersAsync(projectId, runId, cancellationToken);
@@ -101,14 +109,15 @@ public class CharacterService(AppDbContext dbContext, GeminiClient geminiClient)
         catch (Exception exception)
         {
             await dbContext.PipelineSteps
-                .Where(step => step.PipelineStepId == characterStep.PipelineStepId
+                .Where(step => step.ProjectId == projectId
+                    && step.StepName == PipelineStepName.Characters
                     && step.RunId == runId)
                 .ExecuteUpdateAsync(
                     setters => setters
                         .SetProperty(step => step.Status, PipelineStepStatus.Failed)
                         .SetProperty(step => step.ErrorMessage, exception.Message)
                         .SetProperty(step => step.UpdatedAt, DateTime.UtcNow),
-                    cancellationToken);
+                    CancellationToken.None);
 
             throw;
         }

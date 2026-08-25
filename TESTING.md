@@ -85,3 +85,11 @@ BookIllustration_Backend.Tests test succeeded (3.0s)
 
 Test summary: total: 2, failed: 0, succeeded: 2, skipped: 0, duration: 3.0s
 Build succeeded with 2 warning(s) in 6.3s
+
+#### All steps testing after splitting each step into a claim phase and an execute phase
+Test dir: `backend\BookIllustration_Backend.Tests\
+09:43 25/08/2026
+  BookIllustration_Backend.Tests test succeeded (3.7s)
+
+Test summary: total: 10, failed: 0, succeeded: 10, skipped: 0, duration: 3.7s
+Build succeeded with 1 warning(s) in 7.5s

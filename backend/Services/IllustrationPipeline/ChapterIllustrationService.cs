@@ -22,7 +22,7 @@ public class ChapterIllustrationService(
     private const string ChapterImageSetupInstruction =
         "Starting from now, we're going to illustrate the book's chapters. Don't forget to refer to your previous illustrations of the characters to keep the characters consistency, but feel free to change their position.";
 
-    public async Task RunIllustrationsStepAsync(
+    public async Task<Guid> ClaimIllustrationsStepAsync(
         int projectId,
         CancellationToken cancellationToken = default)
     {
@@ -78,6 +78,14 @@ public class ChapterIllustrationService(
                 "The Illustrations step state changed before this request could start.");
         }
 
+        return runId;
+    }
+
+    public async Task ExecuteIllustrationsStepAsync(
+        int projectId,
+        Guid runId,
+        CancellationToken cancellationToken = default)
+    {
         try
         {
             await SetIllustrationsAsync(projectId, runId, cancellationToken);
@@ -85,14 +93,15 @@ public class ChapterIllustrationService(
         catch (Exception exception)
         {
             await dbContext.PipelineSteps
-                .Where(step => step.PipelineStepId == illustrationsStep.PipelineStepId
+                .Where(step => step.ProjectId == projectId
+                    && step.StepName == PipelineStepName.Illustrations
                     && step.RunId == runId)
                 .ExecuteUpdateAsync(
                     setters => setters
                         .SetProperty(step => step.Status, PipelineStepStatus.Failed)
                         .SetProperty(step => step.ErrorMessage, exception.Message)
                         .SetProperty(step => step.UpdatedAt, DateTime.UtcNow),
-                    cancellationToken);
+                    CancellationToken.None);
 
             throw;
         }

@@ -21,7 +21,7 @@ public class PortraitService(
 
     private const string SystemInstructions = "";
 
-    public async Task RunPortraitStepAsync(
+    public async Task<Guid> ClaimPortraitStepAsync(
         int projectId,
         CancellationToken cancellationToken = default)
     {
@@ -77,6 +77,14 @@ public class PortraitService(
                 "The Portraits step state changed before this request could start.");
         }
 
+        return runId;
+    }
+
+    public async Task ExecutePortraitStepAsync(
+        int projectId,
+        Guid runId,
+        CancellationToken cancellationToken = default)
+    {
         try
         {
             await SetPortraitsAsync(projectId, runId, cancellationToken);
@@ -84,14 +92,15 @@ public class PortraitService(
         catch (Exception exception)
         {
             await dbContext.PipelineSteps
-                .Where(step => step.PipelineStepId == portraitStep.PipelineStepId
+                .Where(step => step.ProjectId == projectId
+                    && step.StepName == PipelineStepName.Portraits
                     && step.RunId == runId)
                 .ExecuteUpdateAsync(
                     setters => setters
                         .SetProperty(step => step.Status, PipelineStepStatus.Failed)
                         .SetProperty(step => step.ErrorMessage, exception.Message)
                         .SetProperty(step => step.UpdatedAt, DateTime.UtcNow),
-                    cancellationToken);
+                    CancellationToken.None);
 
             throw;
         }

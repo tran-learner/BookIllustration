@@ -18,8 +18,8 @@ public class StyleService(AppDbContext dbContext, GeminiClient geminiClient)
     private const string StyleInstruction =
         "Can you define a art style that would fit the story but with a twist? Just give us the prompt for the art syle that will added to the furture prompts.";
 
-    // Claim the Style step for one user-triggered attempt before any Gemini call.
-    public async Task RunStyleStepAsync(
+    // Claim the Style step before it is placed on the background queue.
+    public async Task<Guid> ClaimStyleStepAsync(
         int projectId,
         string? userProvidedStyle,
         CancellationToken cancellationToken = default)
@@ -52,6 +52,14 @@ public class StyleService(AppDbContext dbContext, GeminiClient geminiClient)
             throw new InvalidOperationException("The Style step is already running.");
         }
 
+        var styleStepData = string.IsNullOrWhiteSpace(styleStep.StepData)
+            ? new StyleStepData()
+            : JsonSerializer.Deserialize<StyleStepData>(
+                styleStep.StepData,
+                StepDataJsonOptions) ?? new StyleStepData();
+
+        styleStepData.RequestedStyle = userProvidedStyle;
+
         var runId = Guid.NewGuid();
 
         var claimedRows = await dbContext.PipelineSteps
@@ -67,7 +75,10 @@ public class StyleService(AppDbContext dbContext, GeminiClient geminiClient)
                     .SetProperty(step => step.RunId, (Guid?)runId)
                     .SetProperty(step => step.ErrorMessage, (string?)null)
                     .SetProperty(step => step.StartedAt, (DateTime?)now)
-                    .SetProperty(step => step.UpdatedAt, now),
+                    .SetProperty(step => step.UpdatedAt, now)
+                    .SetProperty(
+                        step => step.StepData,
+                        JsonSerializer.Serialize(styleStepData, StepDataJsonOptions)),
                 cancellationToken);
 
         if (claimedRows == 0)
@@ -76,25 +87,30 @@ public class StyleService(AppDbContext dbContext, GeminiClient geminiClient)
                 "The Style step state changed before this request could start.");
         }
 
+        return runId;
+    }
+
+    public async Task ExecuteStyleStepAsync(
+        int projectId,
+        Guid runId,
+        CancellationToken cancellationToken = default)
+    {
         try
         {
-            await SetStyleAsync(
-                projectId,
-                userProvidedStyle,
-                runId,
-                cancellationToken);
+            await SetStyleAsync(projectId, runId, cancellationToken);
         }
         catch (Exception exception)
         {
             await dbContext.PipelineSteps
-                .Where(step => step.PipelineStepId == styleStep.PipelineStepId
+                .Where(step => step.ProjectId == projectId
+                    && step.StepName == PipelineStepName.Style
                     && step.RunId == runId)
                 .ExecuteUpdateAsync(
                     setters => setters
                         .SetProperty(step => step.Status, PipelineStepStatus.Failed)
                         .SetProperty(step => step.ErrorMessage, exception.Message)
                         .SetProperty(step => step.UpdatedAt, DateTime.UtcNow),
-                    cancellationToken);
+                    CancellationToken.None);
 
             throw;
         }
@@ -106,7 +122,6 @@ public class StyleService(AppDbContext dbContext, GeminiClient geminiClient)
     // 3. Create and persist the book interaction, then use its ID for the style interaction.
     public async Task SetStyleAsync(
         int projectId,
-        string? userProvidedStyle,
         Guid runId,
         CancellationToken cancellationToken = default)
     {
@@ -130,6 +145,8 @@ public class StyleService(AppDbContext dbContext, GeminiClient geminiClient)
             : JsonSerializer.Deserialize<StyleStepData>(
                 styleStep.StepData,
                 StepDataJsonOptions) ?? new StyleStepData();
+
+        var userProvidedStyle = styleStepData.RequestedStyle;
 
         if (!string.IsNullOrWhiteSpace(styleStepData.StyleInteractionId))
         {

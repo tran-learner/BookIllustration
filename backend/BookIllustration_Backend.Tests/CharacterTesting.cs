@@ -38,7 +38,12 @@ public class CharacterTesting
             $"/api/projects/{seededProject.ProjectId}/pipeline/characters",
             content: null);
 
-        Assert.Equal(HttpStatusCode.NoContent, characterResponse.StatusCode);
+        Assert.Equal(HttpStatusCode.Accepted, characterResponse.StatusCode);
+
+        await WaitForCharacterStepStatusAsync(
+            factory,
+            seededProject.ProjectId,
+            PipelineStepStatus.Completed);
 
         using var scope = factory.Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -95,7 +100,9 @@ public class CharacterTesting
         var characterUrl =
             $"/api/projects/{seededProject.ProjectId}/pipeline/characters";
 
-        var firstRequest = client.PostAsync(characterUrl, content: null);
+        var firstResponse = await client.PostAsync(characterUrl, content: null);
+
+        Assert.Equal(HttpStatusCode.Accepted, firstResponse.StatusCode);
 
         await factory.GeminiHandler.WaitUntilPausedInteractionStartsAsync();
 
@@ -105,8 +112,39 @@ public class CharacterTesting
 
         factory.GeminiHandler.ReleasePausedInteraction();
 
-        var firstResponse = await firstRequest;
+        await WaitForCharacterStepStatusAsync(
+            factory,
+            seededProject.ProjectId,
+            PipelineStepStatus.Completed);
+    }
 
-        Assert.Equal(HttpStatusCode.NoContent, firstResponse.StatusCode);
+    private static async Task WaitForCharacterStepStatusAsync(
+        BookIllustrationApiFactory factory,
+        int projectId,
+        PipelineStepStatus expectedStatus)
+    {
+        var timeoutAt = DateTime.UtcNow.AddSeconds(5);
+
+        while (DateTime.UtcNow < timeoutAt)
+        {
+            using var scope = factory.Services.CreateScope();
+            var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+            var status = await dbContext.PipelineSteps
+                .Where(step => step.ProjectId == projectId
+                    && step.StepName == PipelineStepName.Characters)
+                .Select(step => step.Status)
+                .SingleAsync();
+
+            if (status == expectedStatus)
+            {
+                return;
+            }
+
+            await Task.Delay(50);
+        }
+
+        throw new Xunit.Sdk.XunitException(
+            $"The Characters step did not reach {expectedStatus} within five seconds.");
     }
 }
