@@ -303,7 +303,7 @@ public class GeminiClient(
     {
         return environment.IsEnvironment("Testing")
             ? Task.CompletedTask
-            : Task.Delay(Random.Shared.Next(8_000, 11_001), cancellationToken);
+            : Task.Delay(Random.Shared.Next(5_000, 10_001), cancellationToken);
     }
 
     private static GeminiImageInteraction ExtractImage(

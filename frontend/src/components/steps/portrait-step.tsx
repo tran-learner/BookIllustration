@@ -10,16 +10,22 @@ type PortraitStepProps = {
   step: PipelineStepResponse;
   projectId: number;
   onProjectUpdated: () => Promise<void>;
+  nextStepLabel?: string;
+  onContinue: () => void;
 };
 
 export default function PortraitStep({
   step,
   projectId,
   onProjectUpdated,
+  nextStepLabel,
+  onContinue,
 }: PortraitStepProps) {
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isRunning = step.status === 1;
+  const isFailed = step.status === 3;
+  const isCompleted = step.status === 2;
 
   async function handleGeneratePortraits() {
     setError("");
@@ -56,8 +62,16 @@ export default function PortraitStep({
   return (
     <section className="step-panel">
       <div className="status-line">
-        {isRunning && <span className="spinner" aria-hidden="true" />}
-        <strong>Portraits</strong> is {pipelineStepStatusLabels[step.status] ?? "in an unknown state"}.
+        {isRunning ? (
+          <>
+            <span className="spinner" aria-hidden="true" />
+            Generating character portraits — this may take a moment.
+          </>
+        ) : (
+          <>
+            <strong>Portraits</strong> is {pipelineStepStatusLabels[step.status] ?? "in an unknown state"}.
+          </>
+        )}
       </div>
 
       <p className="help">
@@ -71,14 +85,21 @@ export default function PortraitStep({
         </p>
       )}
 
+      {isCompleted && (
+        <button type="button" className="continue-action" onClick={onContinue}>
+          Continue to {nextStepLabel} <span aria-hidden="true">→</span>
+        </button>
+      )}
+
       <button
         type="button"
         className="gd-btn gd-btn-primary"
         onClick={handleGeneratePortraits}
         disabled={isSubmitting || isRunning}
+        hidden={isCompleted}
       >
         {isRunning && <span className="spinner" aria-hidden="true" />}
-        Generate Portraits <span aria-hidden="true">→</span>
+        {isFailed ? "Retry Portraits" : "Generate Portraits"} <span aria-hidden="true">→</span>
       </button>
     </section>
   );

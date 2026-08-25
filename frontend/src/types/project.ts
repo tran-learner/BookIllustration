@@ -10,6 +10,20 @@ export type PipelineStepResponse = {
   errorMessage: string | null;
 };
 
+export type CharacterResponse = {
+  characterId: number;
+  characterName: string;
+  characterDescription: string;
+  hasPortrait: boolean;
+};
+
+export type ChapterResponse = {
+  chapterId: number;
+  chapterTitle: string;
+  chapterDescription: string;
+  hasIllustration: boolean;
+};
+
 export const pipelineStepStatusLabels: Record<number, string> = {
   0: "pending",
   1: "running",

@@ -27,6 +27,40 @@ public class ProjectService(
             .SingleOrDefaultAsync(cancellationToken);
     }
 
+    public Task<string?> GetCharacterIllustrationPathAsync(
+        int projectId,
+        int characterId,
+        string userEmail,
+        CancellationToken cancellationToken = default)
+    {
+        var normalizedEmail = userEmail.Trim().ToLowerInvariant();
+
+        return dbContext.Characters
+            .AsNoTracking()
+            .Where(character => character.CharacterId == characterId
+                && character.ProjectId == projectId
+                && character.Project.UserEmail == normalizedEmail)
+            .Select(character => character.CharacterIllustrationPath)
+            .SingleOrDefaultAsync(cancellationToken);
+    }
+
+    public Task<string?> GetChapterIllustrationPathAsync(
+        int projectId,
+        int chapterId,
+        string userEmail,
+        CancellationToken cancellationToken = default)
+    {
+        var normalizedEmail = userEmail.Trim().ToLowerInvariant();
+
+        return dbContext.Chapters
+            .AsNoTracking()
+            .Where(chapter => chapter.ChapterId == chapterId
+                && chapter.ProjectId == projectId
+                && chapter.Project.UserEmail == normalizedEmail)
+            .Select(chapter => chapter.ChapterIllustrationPath)
+            .SingleOrDefaultAsync(cancellationToken);
+    }
+
     public Task<ProjectDetailResponse?> GetProjectByIdAsync(
         int projectId,
         string userEmail,
@@ -65,7 +99,8 @@ public class ProjectService(
                     {
                         CharacterId = character.CharacterId,
                         CharacterName = character.CharacterName,
-                        CharacterDescription = character.CharacterDescription
+                        CharacterDescription = character.CharacterDescription,
+                        HasPortrait = character.CharacterIllustrationPath != null
                     })
                     .ToList(),
                 Chapters = project.Chapters
@@ -74,7 +109,8 @@ public class ProjectService(
                     {
                         ChapterId = chapter.ChapterId,
                         ChapterTitle = chapter.ChapterTitle,
-                        ChapterDescription = chapter.ChapterDescription
+                        ChapterDescription = chapter.ChapterDescription,
+                        HasIllustration = chapter.ChapterIllustrationPath != null
                     })
                     .ToList()
             })

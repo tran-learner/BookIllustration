@@ -509,6 +509,29 @@ body {
   margin-top: 14px;
 }
 
+.continue-action {
+  display: inline-flex;
+  min-width: 230px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 14px;
+  padding: 12px 20px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--grad-orange);
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.continue-action:hover {
+  color: #c95300;
+}
+
 .generated-entities {
   margin-top: 28px;
 }
@@ -541,6 +564,12 @@ body {
   align-items: center;
   justify-content: center;
   background: linear-gradient(160deg, var(--grad-paper) 0%, #fff0e5 55%, #ffd2b2 100%);
+}
+
+.entity-card-image {
+  display: block;
+  width: 100%;
+  object-fit: cover;
 }
 
 .entity-card-art span {

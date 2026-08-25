@@ -5,19 +5,11 @@ import { useParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { useCurrentUser } from "@/components/current-user-provider";
 import StepDetail from "@/components/steps/step-detail";
-import type { PipelineStepResponse } from "@/types/project";
-
-type CharacterResponse = {
-  characterId: number;
-  characterName: string;
-  characterDescription: string;
-};
-
-type ChapterResponse = {
-  chapterId: number;
-  chapterTitle: string;
-  chapterDescription: string;
-};
+import type {
+  ChapterResponse,
+  CharacterResponse,
+  PipelineStepResponse,
+} from "@/types/project";
 
 type ProjectDetailResponse = {
   projectId: number;
@@ -167,6 +159,7 @@ export default function ProjectDetailPage() {
   const [project, setProject] = useState<ProjectDetailResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+  const [selectedStepName, setSelectedStepName] = useState<number | null>(null);
 
   const loadProject = useCallback(async () => {
     const projectId = Number(id);
@@ -206,6 +199,22 @@ export default function ProjectDetailPage() {
     void loadProject();
   }, [loadProject]);
 
+  useEffect(() => {
+    setSelectedStepName(null);
+  }, [id]);
+
+  useEffect(() => {
+    if (project === null || selectedStepName !== null) {
+      return;
+    }
+
+    const firstIncompleteStep = project.pipelineSteps.find(
+      (step) => step.status !== completedStatus,
+    );
+
+    setSelectedStepName(firstIncompleteStep?.stepName ?? 5);
+  }, [project, selectedStepName]);
+
   const hasRunningStep =
     project?.pipelineSteps.some(
       (step) => step.status === runningStatus,
@@ -232,7 +241,7 @@ export default function ProjectDetailPage() {
   }
 
   const currentStep = project.pipelineSteps.find(
-    (step) => step.status !== completedStatus,
+    (step) => step.stepName === selectedStepName,
   ) ?? null;
 
   return (
@@ -254,7 +263,14 @@ export default function ProjectDetailPage() {
           <StepDetail
             step={currentStep}
             projectId={project.projectId}
+            characters={project.characters}
+            chapters={project.chapters}
             onProjectUpdated={loadProject}
+            onContinueToNextStep={() => {
+              if (currentStep && currentStep.stepName < 5) {
+                setSelectedStepName(currentStep.stepName + 1);
+              }
+            }}
           />
         </div>
 

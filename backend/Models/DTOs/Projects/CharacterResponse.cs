@@ -7,4 +7,6 @@ public class CharacterResponse
     public required string CharacterName { get; set; }
 
     public required string CharacterDescription { get; set; }
+
+    public bool HasPortrait { get; set; }
 }

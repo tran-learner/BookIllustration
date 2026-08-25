@@ -90,6 +90,50 @@ public class ProjectController(
         return project is null ? NotFound() : Ok(project);
     }
 
+    [HttpGet("{projectId:int}/characters/{characterId:int}/portrait")]
+    public async Task<IActionResult> GetCharacterPortrait(
+        int projectId,
+        int characterId,
+        CancellationToken cancellationToken)
+    {
+        var userEmail = User.FindFirst(ClaimTypes.Email)?.Value;
+
+        if (string.IsNullOrWhiteSpace(userEmail))
+        {
+            return Unauthorized();
+        }
+
+        var illustrationPath = await projectService.GetCharacterIllustrationPathAsync(
+            projectId,
+            characterId,
+            userEmail,
+            cancellationToken);
+
+        return GetIllustrationFile(illustrationPath);
+    }
+
+    [HttpGet("{projectId:int}/chapters/{chapterId:int}/illustration")]
+    public async Task<IActionResult> GetChapterIllustration(
+        int projectId,
+        int chapterId,
+        CancellationToken cancellationToken)
+    {
+        var userEmail = User.FindFirst(ClaimTypes.Email)?.Value;
+
+        if (string.IsNullOrWhiteSpace(userEmail))
+        {
+            return Unauthorized();
+        }
+
+        var illustrationPath = await projectService.GetChapterIllustrationPathAsync(
+            projectId,
+            chapterId,
+            userEmail,
+            cancellationToken);
+
+        return GetIllustrationFile(illustrationPath);
+    }
+
     [HttpGet]
     public async Task<ActionResult<List<ProjectListItemResponse>>> GetProjects(
         CancellationToken cancellationToken)
@@ -145,5 +189,38 @@ public class ProjectController(
                 StatusCodes.Status500InternalServerError,
                 new { message = "Unable to create the project. Please try again." });
         }
+    }
+
+    private IActionResult GetIllustrationFile(string? illustrationPath)
+    {
+        if (string.IsNullOrWhiteSpace(illustrationPath))
+        {
+            return NotFound();
+        }
+
+        var illustrationsDirectory = Path.GetFullPath(
+            fileStorageOptions.Value.IllustrationsDirectory);
+        var fullIllustrationPath = Path.GetFullPath(illustrationPath);
+
+        if (!fullIllustrationPath.StartsWith(
+                illustrationsDirectory + Path.DirectorySeparatorChar,
+                StringComparison.OrdinalIgnoreCase)
+            || !System.IO.File.Exists(fullIllustrationPath))
+        {
+            return NotFound();
+        }
+
+        var contentType = Path.GetExtension(fullIllustrationPath).ToLowerInvariant() switch
+        {
+            ".png" => "image/png",
+            ".jpg" or ".jpeg" => "image/jpeg",
+            ".webp" => "image/webp",
+            _ => "application/octet-stream"
+        };
+
+        return PhysicalFile(
+            fullIllustrationPath,
+            contentType,
+            enableRangeProcessing: true);
     }
 }

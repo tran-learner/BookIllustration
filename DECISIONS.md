@@ -34,7 +34,7 @@ I disagreed because `ProjectService` only receives the user's uploaded or pasted
 
 ## 07. Mock Gemini Image Responses During Development
 
-Although this assessment needs very little Gemini image quota in practice, enabling billing requires an initial $11 top-up. The author therefore chose to mock image-generation responses to avoid that cost. Each mocked image request waits for a random 8–11 seconds so the pipeline still behaves like it is waiting for image generation. The real client request code remains in [GeminiClient](backend/Services/GeminiFeatures/GeminiClient.cs), but is temporarily disabled while the mock is active.
+Although this assessment needs very little Gemini image quota in practice, enabling billing requires an initial $11 top-up. The author therefore chose to mock image-generation responses to avoid that cost. Each mocked image request waits for a random 5–10 seconds so the pipeline still behaves like it is waiting for image generation. The real client request code remains in [GeminiClient](backend/Services/GeminiFeatures/GeminiClient.cs), but is temporarily disabled while the mock is active.
 
 ## If I had one more day 
 I would write more tests to cover a wider range of use cases. The current number of test cases is still limited, which means important paths may be missed and could lead to unexpected behavior in critical scenarios. My priority would be to make sure the application works correctly and is stable before focusing on anything else.

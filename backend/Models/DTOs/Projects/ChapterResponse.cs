@@ -7,4 +7,6 @@ public class ChapterResponse
     public required string ChapterTitle { get; set; }
 
     public required string ChapterDescription { get; set; }
+
+    public bool HasIllustration { get; set; }
 }

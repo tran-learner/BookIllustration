@@ -10,17 +10,23 @@ type StyleStepProps = {
   step: PipelineStepResponse;
   projectId: number;
   onProjectUpdated: () => Promise<void>;
+  nextStepLabel?: string;
+  onContinue: () => void;
 };
 
 export default function StyleStep({
   step,
   projectId,
   onProjectUpdated,
+  nextStepLabel,
+  onContinue,
 }: StyleStepProps) {
   const [style, setStyle] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isRunning = step.status === 1;
+  const isFailed = step.status === 3;
+  const isCompleted = step.status === 2;
 
   async function handleGenerateStyle() {
     setError("");
@@ -61,8 +67,16 @@ export default function StyleStep({
   return (
     <section className="step-panel">
       <div className="status-line">
-        {isRunning && <span className="spinner" aria-hidden="true" />}
-        <strong>Style</strong> is {pipelineStepStatusLabels[step.status] ?? "in an unknown state"}.
+        {isRunning ? (
+          <>
+            <span className="spinner" aria-hidden="true" />
+            Reading your book text and defining an art style.
+          </>
+        ) : (
+          <>
+            <strong>Style</strong> is {pipelineStepStatusLabels[step.status] ?? "in an unknown state"}.
+          </>
+        )}
       </div>
 
       <div className="gd-field style-step-field">
@@ -86,14 +100,21 @@ export default function StyleStep({
         </p>
       )}
 
+      {isCompleted && (
+        <button type="button" className="continue-action" onClick={onContinue}>
+          Continue to {nextStepLabel} <span aria-hidden="true">→</span>
+        </button>
+      )}
+
       <button
         type="button"
         className="gd-btn gd-btn-primary"
         onClick={handleGenerateStyle}
         disabled={isSubmitting || isRunning}
+        hidden={isCompleted}
       >
         {isRunning && <span className="spinner" aria-hidden="true" />}
-        Generate Style <span aria-hidden="true">→</span>
+        {isFailed ? "Retry Style" : "Generate Style"} <span aria-hidden="true">→</span>
       </button>
     </section>
   );
