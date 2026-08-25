@@ -102,7 +102,8 @@ export default function StyleStep({
 
       {isCompleted && (
         <button type="button" className="continue-action" onClick={onContinue}>
-          Continue to {nextStepLabel} <span aria-hidden="true">→</span>
+          <span className="continue-action-label">Continue to {nextStepLabel}</span>
+          <span aria-hidden="true">→</span>
         </button>
       )}
 

@@ -513,23 +513,23 @@ body {
   display: inline-flex;
   min-width: 230px;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 8px;
   margin-top: 14px;
-  padding: 12px 20px;
+  padding: 12px 20px 12px 0;
   border: 1px solid transparent;
   border-radius: 8px;
   background: transparent;
   color: var(--grad-orange);
   font-size: 14px;
   font-weight: 700;
-  text-decoration: underline;
-  text-underline-offset: 3px;
+  text-decoration: none;
   cursor: pointer;
 }
 
-.continue-action:hover {
-  color: #c95300;
+.continue-action-label {
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .generated-entities {
